@@ -1,0 +1,20 @@
+[project]
+name = "data"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastparquet>=2024.11.0",
+    "pandas>=2.3.3",
+    "plotly>=6.5.0",
+    "pyarrow>=22.0.0",
+    "scikit-learn>=1.7.2",
+    "seaborn>=0.13.2",
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "radon>=6.0.1",
+    "lexicalrichness>=0.5.1",
+    "scipy>=1.11.0",
+    "kaleido>=0.2.1",
+]
