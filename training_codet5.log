@@ -1,0 +1,124 @@
+
+======================================================================
+STAGE 2 TRAINING: CodeT5-220m Multi-Class Classification
+======================================================================
+
+GPU: NVIDIA GeForce RTX 5090
+VRAM: 33.66 GB
+
+======================================================================
+STEP 1/5: Loading Training Data
+======================================================================
+
+Loading train data with code strings...
+  ✓ Loaded 500,000 total samples
+
+  Label distribution:
+    Human: 442,096 (88.42%)
+    AI-1: 4,162 (0.83%)
+    AI-2: 8,993 (1.80%)
+    AI-3: 3,029 (0.61%)
+    AI-4: 2,227 (0.45%)
+    AI-5: 1,968 (0.39%)
+    AI-6: 5,783 (1.16%)
+    AI-7: 8,197 (1.64%)
+    AI-8: 8,127 (1.63%)
+    AI-9: 4,608 (0.92%)
+    AI-10: 10,810 (2.16%)
+
+======================================================================
+STEP 2/5: Loading Validation Data
+======================================================================
+
+Loading validation data with code strings...
+  ✓ Loaded 100,000 total samples
+
+  Label distribution:
+    Human: 88,490 (88.49%)
+    AI-1: 847 (0.85%)
+    AI-2: 1,755 (1.75%)
+    AI-3: 650 (0.65%)
+    AI-4: 445 (0.45%)
+    AI-5: 372 (0.37%)
+    AI-6: 1,118 (1.12%)
+    AI-7: 1,695 (1.70%)
+    AI-8: 1,579 (1.58%)
+    AI-9: 895 (0.90%)
+    AI-10: 2,154 (2.15%)
+
+======================================================================
+STEP 3/5: Initializing CodeT5 Classifier
+======================================================================
+
+Classifier configuration:
+  Model: Salesforce/codet5p-220m
+  Batch size: 32
+  Max epochs: 5
+  Learning rate: 0.0002
+  Early stopping: True
+  Validation fraction: 0.1
+  Patience: 3
+  Device: cuda
+
+======================================================================
+STEP 4/5: Training Classifier
+======================================================================
+
+Training started at: 2025-11-28 00:24:20
+
+======================================================================
+Training Stage 2: CodeT5p-770m Classifier (AI Families)
+======================================================================
+Training samples (AI only): 57,904
+AI families: 10
+Class distribution:
+  AI-1: 4,162 (7.19%)
+  AI-2: 8,993 (15.53%)
+  AI-3: 3,029 (5.23%)
+  AI-4: 2,227 (3.85%)
+  AI-5: 1,968 (3.40%)
+  AI-6: 5,783 (9.99%)
+  AI-7: 8,197 (14.16%)
+  AI-8: 8,127 (14.04%)
+  AI-9: 4,608 (7.96%)
+  AI-10: 10,810 (18.67%)
+======================================================================
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-220m...
+Loading encoder: Salesforce/codet5p-220m (~1GB download)...
+✓ Encoder frozen (109,607,040 params)
+✓ Classification head created (199,946 params)
+  Total params: 109,806,986
+  Trainable params: 199,946 (0.18%)
+  Device: cuda
+======================================================================
+
+Early stopping enabled:
+  Training samples: 52,114
+  Validation samples: 5,790
+
+Class weights (balanced):
+  AI-1: 1.390
+  AI-2: 0.645
+  AI-3: 1.920
+  AI-4: 2.598
+  AI-5: 2.907
+  AI-6: 0.997
+  AI-7: 0.707
+  AI-8: 0.713
+  AI-9: 1.268
+  AI-10: 0.534
+
+Training configuration:
+  Batch size: 32
+  Batches per epoch: 1629
+  Learning rate: 0.0002
+  Max epochs: 5
+  Patience: 3
+======================================================================
+Epoch 1/5 - Train Loss: 1.7076, Val Loss: 1.5345 (best)
+Epoch 2/5 - Train Loss: 1.5109, Val Loss: 1.4665 (best)
+Epoch 3/5 - Train Loss: 1.4495, Val Loss: 1.4426 (best)

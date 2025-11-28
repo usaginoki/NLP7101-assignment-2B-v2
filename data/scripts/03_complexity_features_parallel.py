@@ -1,6 +1,7 @@
 """
-Code Complexity Feature Extraction
+Code Complexity Feature Extraction - Parallel Version
 Extracts Cyclomatic Complexity, Halstead Metrics, LOC, and other complexity metrics
+Uses multiprocessing to accelerate extraction
 """
 
 import sys
@@ -18,29 +19,41 @@ from modules.visualizations import (
     plot_scatter
 )
 import matplotlib.pyplot as plt
+from multiprocessing import Pool, cpu_count
+from functools import partial
 
 
-def extract_complexity_features(df: pd.DataFrame, code_col: str) -> pd.DataFrame:
+def extract_features_single(code_text):
+    """Extract features for a single code sample"""
+    extractor = ComplexityFeatureExtractor()
+    return extractor.extract(str(code_text))
+
+
+def extract_complexity_features_parallel(df: pd.DataFrame, code_col: str, n_jobs: int = None) -> pd.DataFrame:
     """
-    Extract complexity features for all code samples
+    Extract complexity features for all code samples using parallel processing
 
     Args:
         df: DataFrame with code
         code_col: Name of the code column
+        n_jobs: Number of parallel jobs (default: all CPU cores)
 
     Returns:
         DataFrame with added complexity features
     """
-    print("Extracting complexity features...")
-    print("This may take a while for large datasets...")
+    if n_jobs is None:
+        n_jobs = cpu_count()
 
-    extractor = ComplexityFeatureExtractor()
+    print(f"Extracting complexity features using {n_jobs} CPU cores...")
+    print(f"Processing {len(df)} samples...")
 
-    # Extract features with progress bar
-    feature_list = []
-    for code in tqdm(df[code_col], desc="Processing code samples"):
-        features = extractor.extract(str(code))
-        feature_list.append(features)
+    # Extract features with progress bar using multiprocessing
+    with Pool(processes=n_jobs) as pool:
+        feature_list = list(tqdm(
+            pool.imap(extract_features_single, df[code_col], chunksize=100),
+            total=len(df),
+            desc="Processing code samples"
+        ))
 
     # Create DataFrame from features
     features_df = pd.DataFrame(feature_list)
@@ -62,16 +75,17 @@ def extract_complexity_features(df: pd.DataFrame, code_col: str) -> pd.DataFrame
 
 def analyze_complexity_features(df: pd.DataFrame, label_col: str, split_name: str = "train"):
     """
-    Analyze and visualize complexity features
-
-    Args:
-        df: DataFrame with complexity features
-        label_col: Label column name
-        split_name: Dataset split name
+    Analyze and visualize complexity features (sample only for visualization)
     """
     print(f"\n{'=' * 80}")
     print(f"Complexity Analysis - {split_name.upper()}")
     print(f"{'=' * 80}")
+
+    # Sample for analysis if dataset is large
+    df_sample = df
+    if len(df) > 10000:
+        print(f"\nSampling 10,000 samples for analysis and visualization...")
+        df_sample = df.sample(n=10000, random_state=42)
 
     # Define complexity features
     complexity_features = [
@@ -84,25 +98,25 @@ def analyze_complexity_features(df: pd.DataFrame, label_col: str, split_name: st
     # Filter to only existing columns
     complexity_features = [f for f in complexity_features if f in df.columns]
 
-    # Print summary statistics
+    # Print summary statistics (use full dataset)
     print("\nComplexity Metrics Summary:")
     print(df[complexity_features].describe().to_string())
 
-    # Print statistics by class
+    # Print statistics by class (use full dataset)
     print(f"\n\nComplexity Metrics by Model Family:")
     stats_by_class = df.groupby(label_col)[complexity_features].agg(['mean', 'std'])
     print(stats_by_class.to_string())
 
-    # Create visualizations
-    print(f"\n\nGenerating complexity visualizations...")
+    # Create visualizations (use sample)
+    print(f"\n\nGenerating complexity visualizations (using sample)...")
 
     # Box plots for key complexity metrics
     key_metrics = ['loc', 'cc_mean', 'halstead_volume', 'maintainability_index']
     for metric in key_metrics:
-        if metric in df.columns:
+        if metric in df_sample.columns:
             print(f"  Creating boxplot for {metric}...")
             fig = plot_feature_boxplots(
-                df, metric, label_col,
+                df_sample, metric, label_col,
                 f"{split_name.title()} - {metric} by Model Family"
             )
             save_figure(fig, f"{split_name}_{metric}_boxplot.png", "figures/complexity")
@@ -111,25 +125,25 @@ def analyze_complexity_features(df: pd.DataFrame, label_col: str, split_name: st
     # Correlation heatmap for complexity features
     print(f"  Creating correlation heatmap...")
     fig = plot_correlation_heatmap(
-        df, complexity_features,
+        df_sample, complexity_features,
         f"{split_name.title()} - Complexity Features Correlation"
     )
     save_figure(fig, f"{split_name}_complexity_correlation.png", "figures/correlations")
     plt.close(fig)
 
     # Scatter plots for interesting relationships
-    if 'cc_mean' in df.columns and 'loc' in df.columns:
+    if 'cc_mean' in df_sample.columns and 'loc' in df_sample.columns:
         print(f"  Creating scatter plot: CC vs LOC...")
         fig = plot_scatter(
-            df, 'loc', 'cc_mean', label_col,
+            df_sample, 'loc', 'cc_mean', label_col,
             f"{split_name.title()} - Cyclomatic Complexity vs Lines of Code"
         )
         save_figure(fig, f"{split_name}_cc_vs_loc.html", "figures/complexity")
 
-    if 'halstead_difficulty' in df.columns and 'halstead_volume' in df.columns:
+    if 'halstead_difficulty' in df_sample.columns and 'halstead_volume' in df_sample.columns:
         print(f"  Creating scatter plot: Halstead Difficulty vs Volume...")
         fig = plot_scatter(
-            df, 'halstead_volume', 'halstead_difficulty', label_col,
+            df_sample, 'halstead_volume', 'halstead_difficulty', label_col,
             f"{split_name.title()} - Halstead Volume vs Difficulty"
         )
         save_figure(fig, f"{split_name}_halstead_scatter.html", "figures/complexity")
@@ -140,23 +154,16 @@ def analyze_complexity_features(df: pd.DataFrame, label_col: str, split_name: st
 def save_feature_matrix(df: pd.DataFrame, complexity_features: list, split_name: str = "train"):
     """
     Save feature matrix to CSV
-
-    Args:
-        df: DataFrame with features
-        complexity_features: List of complexity feature columns
-        split_name: Dataset split name
     """
     output_dir = create_output_dir("reports")
 
-    # Select relevant columns
-    feature_cols = [col for col in df.columns if col in complexity_features]
-    output_file = output_dir / f"{split_name}_complexity_features.csv"
-
     # Save full feature matrix
+    output_file = output_dir / f"{split_name}_complexity_features.csv"
     df.to_csv(output_file, index=False)
     print(f"\nFeature matrix saved to: {output_file}")
 
     # Save feature summary
+    feature_cols = [col for col in df.columns if col in complexity_features]
     summary_file = output_dir / f"{split_name}_complexity_summary.csv"
     summary = df[feature_cols].describe()
     summary.to_csv(summary_file)
@@ -165,20 +172,20 @@ def save_feature_matrix(df: pd.DataFrame, complexity_features: list, split_name:
 
 def main():
     print("=" * 80)
-    print("Complexity Feature Extraction - SemEval 2026 Task 13 Subtask B")
+    print("Complexity Feature Extraction (Parallel) - SemEval 2026 Task 13 Subtask B")
     print("=" * 80)
     print()
 
+    # Determine number of CPU cores to use
+    n_cores = cpu_count()
+    print(f"Using {n_cores} CPU cores for parallel processing")
+
     # Load training data
-    print("Loading training data...")
+    print("\nLoading training data...")
     df_train = load_data("train.parquet")
 
     # Process all samples (no sampling)
     print(f"\nProcessing all {len(df_train)} samples...")
-    # if len(df_train) > 10000:
-    #     print(f"\nDataset is large ({len(df_train)} samples).")
-    #     print("Processing first 10,000 samples for EDA...")
-    #     df_train = df_train.sample(n=10000, random_state=42).reset_index(drop=True)
 
     # Identify code and label columns
     code_col = get_code_column(df_train)
@@ -187,8 +194,8 @@ def main():
     print(f"\nCode column: '{code_col}'")
     print(f"Label column: '{label_col}'")
 
-    # Extract complexity features
-    df_train = extract_complexity_features(df_train, code_col)
+    # Extract complexity features using parallel processing
+    df_train = extract_complexity_features_parallel(df_train, code_col, n_jobs=n_cores)
 
     # Get list of complexity features
     complexity_feature_cols = [
@@ -199,7 +206,7 @@ def main():
         'maintainability_index'
     ]
 
-    # Analyze features
+    # Analyze features (will use sampling for visualization)
     analyze_complexity_features(df_train, label_col, "train")
 
     # Save feature matrix
@@ -213,11 +220,8 @@ def main():
 
         # Process all validation samples (no sampling)
         print(f"Processing all {len(df_val)} validation samples...")
-        # if len(df_val) > 5000:
-        #     print(f"Sampling 5,000 from validation set...")
-        #     df_val = df_val.sample(n=5000, random_state=42).reset_index(drop=True)
 
-        df_val = extract_complexity_features(df_val, code_col)
+        df_val = extract_complexity_features_parallel(df_val, code_col, n_jobs=n_cores)
         analyze_complexity_features(df_val, label_col, "validation")
         save_feature_matrix(df_val, complexity_feature_cols, "validation")
     except FileNotFoundError:

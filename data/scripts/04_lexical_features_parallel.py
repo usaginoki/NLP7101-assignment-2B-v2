@@ -1,6 +1,7 @@
 """
-Lexical Feature Extraction
+Lexical Feature Extraction - Parallel Version
 Extracts lexical diversity, token statistics, and language-specific patterns
+Uses multiprocessing to accelerate extraction
 """
 
 import sys
@@ -18,29 +19,40 @@ from modules.visualizations import (
     plot_correlation_heatmap
 )
 import matplotlib.pyplot as plt
+from multiprocessing import Pool, cpu_count
 
 
-def extract_lexical_features(df: pd.DataFrame, code_col: str) -> pd.DataFrame:
+def extract_features_single(code_text):
+    """Extract features for a single code sample"""
+    extractor = LexicalFeatureExtractor()
+    return extractor.extract(str(code_text))
+
+
+def extract_lexical_features_parallel(df: pd.DataFrame, code_col: str, n_jobs: int = None) -> pd.DataFrame:
     """
-    Extract lexical features for all code samples
+    Extract lexical features for all code samples using parallel processing
 
     Args:
         df: DataFrame with code
         code_col: Name of the code column
+        n_jobs: Number of parallel jobs (default: all CPU cores)
 
     Returns:
         DataFrame with added lexical features
     """
-    print("Extracting lexical features...")
-    print("This may take a while for large datasets...")
+    if n_jobs is None:
+        n_jobs = cpu_count()
 
-    extractor = LexicalFeatureExtractor()
+    print(f"Extracting lexical features using {n_jobs} CPU cores...")
+    print(f"Processing {len(df)} samples...")
 
-    # Extract features with progress bar
-    feature_list = []
-    for code in tqdm(df[code_col], desc="Processing code samples"):
-        features = extractor.extract(str(code))
-        feature_list.append(features)
+    # Extract features with progress bar using multiprocessing
+    with Pool(processes=n_jobs) as pool:
+        feature_list = list(tqdm(
+            pool.imap(extract_features_single, df[code_col], chunksize=100),
+            total=len(df),
+            desc="Processing code samples"
+        ))
 
     # Create DataFrame from features
     features_df = pd.DataFrame(feature_list)
@@ -62,16 +74,17 @@ def extract_lexical_features(df: pd.DataFrame, code_col: str) -> pd.DataFrame:
 
 def analyze_lexical_features(df: pd.DataFrame, label_col: str, split_name: str = "train"):
     """
-    Analyze and visualize lexical features
-
-    Args:
-        df: DataFrame with lexical features
-        label_col: Label column name
-        split_name: Dataset split name
+    Analyze and visualize lexical features (sample only for visualization)
     """
     print(f"\n{'=' * 80}")
     print(f"Lexical Analysis - {split_name.upper()}")
     print(f"{'=' * 80}")
+
+    # Sample for analysis if dataset is large
+    df_sample = df
+    if len(df) > 10000:
+        print(f"\nSampling 10,000 samples for analysis and visualization...")
+        df_sample = df.sample(n=10000, random_state=42)
 
     # Define lexical features
     lexical_features = [
@@ -83,11 +96,11 @@ def analyze_lexical_features(df: pd.DataFrame, label_col: str, split_name: str =
     # Filter to only existing columns
     lexical_features = [f for f in lexical_features if f in df.columns]
 
-    # Print summary statistics
+    # Print summary statistics (use full dataset)
     print("\nLexical Metrics Summary:")
     print(df[lexical_features].describe().to_string())
 
-    # Print statistics by class
+    # Print statistics by class (use full dataset)
     print(f"\n\nLexical Metrics by Model Family:")
     stats_by_class = df.groupby(label_col)[lexical_features].agg(['mean', 'std'])
     print(stats_by_class.to_string())
@@ -99,23 +112,23 @@ def analyze_lexical_features(df: pd.DataFrame, label_col: str, split_name: str =
 
     for metric in diversity_metrics:
         print(f"\n{metric.upper()}:")
-        for model_family in df[label_col].unique():
+        for model_family in sorted(df[label_col].unique()):
             family_data = df[df[label_col] == model_family][metric]
             # Filter out zeros for valid samples
             valid_data = family_data[family_data > 0]
             if len(valid_data) > 0:
                 print(f"  {model_family}: {valid_data.mean():.4f} ± {valid_data.std():.4f}")
 
-    # Create visualizations
-    print(f"\n\nGenerating lexical visualizations...")
+    # Create visualizations (use sample)
+    print(f"\n\nGenerating lexical visualizations (using sample)...")
 
     # Box plots for key lexical metrics
     key_metrics = ['token_count', 'unique_tokens', 'ttr', 'keyword_ratio']
     for metric in key_metrics:
-        if metric in df.columns:
+        if metric in df_sample.columns:
             print(f"  Creating boxplot for {metric}...")
             fig = plot_feature_boxplots(
-                df, metric, label_col,
+                df_sample, metric, label_col,
                 f"{split_name.title()} - {metric} by Model Family"
             )
             save_figure(fig, f"{split_name}_{metric}_boxplot.png", "figures/lexical")
@@ -123,10 +136,10 @@ def analyze_lexical_features(df: pd.DataFrame, label_col: str, split_name: str =
 
     # Violin plots for diversity metrics
     for metric in diversity_metrics:
-        if metric in df.columns:
+        if metric in df_sample.columns:
             print(f"  Creating violin plot for {metric}...")
             # Filter out zeros for better visualization
-            df_filtered = df[df[metric] > 0].copy()
+            df_filtered = df_sample[df_sample[metric] > 0].copy()
             if len(df_filtered) > 0:
                 fig = plot_violin(
                     df_filtered, metric, label_col,
@@ -138,7 +151,7 @@ def analyze_lexical_features(df: pd.DataFrame, label_col: str, split_name: str =
     # Correlation heatmap for lexical features
     print(f"  Creating correlation heatmap...")
     fig = plot_correlation_heatmap(
-        df, lexical_features,
+        df_sample, lexical_features,
         f"{split_name.title()} - Lexical Features Correlation"
     )
     save_figure(fig, f"{split_name}_lexical_correlation.png", "figures/correlations")
@@ -149,12 +162,7 @@ def analyze_lexical_features(df: pd.DataFrame, label_col: str, split_name: str =
 
 def compare_lexical_patterns(df: pd.DataFrame, label_col: str, split_name: str = "train"):
     """
-    Compare lexical patterns across model families
-
-    Args:
-        df: DataFrame with lexical features
-        label_col: Label column name
-        split_name: Dataset split name
+    Compare lexical patterns across model families (use full dataset)
     """
     print(f"\n{'=' * 80}")
     print("Lexical Pattern Comparison Across Model Families")
@@ -188,11 +196,6 @@ def compare_lexical_patterns(df: pd.DataFrame, label_col: str, split_name: str =
 def save_feature_matrix(df: pd.DataFrame, lexical_features: list, split_name: str = "train"):
     """
     Save lexical feature matrix to CSV
-
-    Args:
-        df: DataFrame with features
-        lexical_features: List of lexical feature columns
-        split_name: Dataset split name
     """
     output_dir = create_output_dir("reports")
 
@@ -211,20 +214,20 @@ def save_feature_matrix(df: pd.DataFrame, lexical_features: list, split_name: st
 
 def main():
     print("=" * 80)
-    print("Lexical Feature Extraction - SemEval 2026 Task 13 Subtask B")
+    print("Lexical Feature Extraction (Parallel) - SemEval 2026 Task 13 Subtask B")
     print("=" * 80)
     print()
 
+    # Determine number of CPU cores to use
+    n_cores = cpu_count()
+    print(f"Using {n_cores} CPU cores for parallel processing")
+
     # Load training data
-    print("Loading training data...")
+    print("\nLoading training data...")
     df_train = load_data("train.parquet")
 
     # Process all samples (no sampling)
     print(f"\nProcessing all {len(df_train)} samples...")
-    # if len(df_train) > 10000:
-    #     print(f"\nDataset is large ({len(df_train)} samples).")
-    #     print("Processing first 10,000 samples for EDA...")
-    #     df_train = df_train.sample(n=10000, random_state=42).reset_index(drop=True)
 
     # Identify code and label columns
     code_col = get_code_column(df_train)
@@ -233,8 +236,8 @@ def main():
     print(f"\nCode column: '{code_col}'")
     print(f"Label column: '{label_col}'")
 
-    # Extract lexical features
-    df_train = extract_lexical_features(df_train, code_col)
+    # Extract lexical features using parallel processing
+    df_train = extract_lexical_features_parallel(df_train, code_col, n_jobs=n_cores)
 
     # Get list of lexical features
     lexical_feature_cols = [
@@ -243,10 +246,10 @@ def main():
         'keyword_count', 'keyword_ratio'
     ]
 
-    # Analyze features
+    # Analyze features (will use sampling for visualization)
     analyze_lexical_features(df_train, label_col, "train")
 
-    # Compare patterns across model families
+    # Compare patterns across model families (uses full dataset)
     compare_lexical_patterns(df_train, label_col, "train")
 
     # Save feature matrix
@@ -260,11 +263,8 @@ def main():
 
         # Process all validation samples (no sampling)
         print(f"Processing all {len(df_val)} validation samples...")
-        # if len(df_val) > 5000:
-        #     print(f"Sampling 5,000 from validation set...")
-        #     df_val = df_val.sample(n=5000, random_state=42).reset_index(drop=True)
 
-        df_val = extract_lexical_features(df_val, code_col)
+        df_val = extract_lexical_features_parallel(df_val, code_col, n_jobs=n_cores)
         analyze_lexical_features(df_val, label_col, "validation")
         compare_lexical_patterns(df_val, label_col, "validation")
         save_feature_matrix(df_val, lexical_feature_cols, "validation")

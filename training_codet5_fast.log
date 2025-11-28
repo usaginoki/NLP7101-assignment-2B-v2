@@ -1,0 +1,208 @@
+
+======================================================================
+STAGE 2 TRAINING: CodeT5-220m Multi-Class Classification
+======================================================================
+
+GPU: NVIDIA GeForce RTX 5090
+VRAM: 33.66 GB
+
+======================================================================
+STEP 1/5: Loading Training Data
+======================================================================
+
+Loading train data with code strings...
+  ✓ Loaded 500,000 total samples
+
+  Label distribution:
+    Human: 442,096 (88.42%)
+    AI-1: 4,162 (0.83%)
+    AI-2: 8,993 (1.80%)
+    AI-3: 3,029 (0.61%)
+    AI-4: 2,227 (0.45%)
+    AI-5: 1,968 (0.39%)
+    AI-6: 5,783 (1.16%)
+    AI-7: 8,197 (1.64%)
+    AI-8: 8,127 (1.63%)
+    AI-9: 4,608 (0.92%)
+    AI-10: 10,810 (2.16%)
+
+======================================================================
+STEP 2/5: Loading Validation Data
+======================================================================
+
+Loading validation data with code strings...
+  ✓ Loaded 100,000 total samples
+
+  Label distribution:
+    Human: 88,490 (88.49%)
+    AI-1: 847 (0.85%)
+    AI-2: 1,755 (1.75%)
+    AI-3: 650 (0.65%)
+    AI-4: 445 (0.45%)
+    AI-5: 372 (0.37%)
+    AI-6: 1,118 (1.12%)
+    AI-7: 1,695 (1.70%)
+    AI-8: 1,579 (1.58%)
+    AI-9: 895 (0.90%)
+    AI-10: 2,154 (2.15%)
+
+======================================================================
+STEP 3/5: Initializing CodeT5 Classifier
+======================================================================
+
+Classifier configuration:
+  Model: Salesforce/codet5p-220m
+  Batch size: 256
+  Max epochs: 5
+  Learning rate: 0.0002
+  Early stopping: True
+  Validation fraction: 0.1
+  Patience: 3
+  Device: cuda
+
+======================================================================
+STEP 4/5: Training Classifier
+======================================================================
+
+Training started at: 2025-11-28 00:36:52
+
+======================================================================
+Training Stage 2: CodeT5p-770m Classifier (AI Families)
+======================================================================
+Training samples (AI only): 57,904
+AI families: 10
+Class distribution:
+  AI-1: 4,162 (7.19%)
+  AI-2: 8,993 (15.53%)
+  AI-3: 3,029 (5.23%)
+  AI-4: 2,227 (3.85%)
+  AI-5: 1,968 (3.40%)
+  AI-6: 5,783 (9.99%)
+  AI-7: 8,197 (14.16%)
+  AI-8: 8,127 (14.04%)
+  AI-9: 4,608 (7.96%)
+  AI-10: 10,810 (18.67%)
+======================================================================
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-220m...
+Loading encoder: Salesforce/codet5p-220m (~1GB download)...
+✓ Encoder frozen (109,607,040 params)
+✓ Classification head created (199,946 params)
+  Total params: 109,806,986
+  Trainable params: 199,946 (0.18%)
+  Device: cuda
+======================================================================
+
+Early stopping enabled:
+  Training samples: 52,114
+  Validation samples: 5,790
+
+Class weights (balanced):
+  AI-1: 1.390
+  AI-2: 0.645
+  AI-3: 1.920
+  AI-4: 2.598
+  AI-5: 2.907
+  AI-6: 0.997
+  AI-7: 0.707
+  AI-8: 0.713
+  AI-9: 1.268
+  AI-10: 0.534
+
+Training configuration:
+  Batch size: 256
+  Batches per epoch: 204
+  Learning rate: 0.0002
+  Max epochs: 5
+  Patience: 3
+======================================================================
+Epoch 1/5 - Train Loss: 1.8101, Val Loss: 1.6330 (best)
+Epoch 2/5 - Train Loss: 1.5756, Val Loss: 1.5206 (best)
+Epoch 3/5 - Train Loss: 1.4951, Val Loss: 1.4789 (best)
+Epoch 4/5 - Train Loss: 1.4428, Val Loss: 1.4309 (best)
+Epoch 5/5 - Train Loss: 1.4007, Val Loss: 1.4006 (best)
+
+✓ Restored best model from validation
+======================================================================
+✓ Stage 2 CodeT5 training complete!
+======================================================================
+
+Training completed at: 2025-11-28 00:52:44
+Total training time: 951.7 seconds (15.9 minutes)
+
+======================================================================
+STEP 5/5: Evaluating on Validation Set
+======================================================================
+
+Validation AI samples: 11,510
+Running predictions...
+
+======================================================================
+Stage 2 Validation Results (AI Families Only)
+======================================================================
+              precision    recall  f1-score   support
+
+        AI-1     0.4211    0.4852    0.4509       847
+        AI-2     0.3772    0.0490    0.0867      1755
+        AI-3     0.2435    0.4062    0.3045       650
+        AI-4     0.3816    0.8112    0.5191       445
+        AI-5     0.3038    0.6452    0.4131       372
+        AI-6     0.4484    0.5751    0.5039      1118
+        AI-7     0.4117    0.1375    0.2061      1695
+        AI-8     0.6351    0.6878    0.6604      1579
+        AI-9     0.2945    0.3251    0.3091       895
+       AI-10     0.5872    0.7600    0.6625      2154
+
+    accuracy                         0.4563     11510
+   macro avg     0.4104    0.4882    0.4116     11510
+weighted avg     0.4509    0.4563    0.4149     11510
+
+
+Confusion Matrix (10x10):
+(Rows: Actual, Columns: Predicted)
+      AI- 1  AI- 2  AI- 3  AI- 4  AI- 5  AI- 6  AI- 7  AI- 8  AI- 9  AI-10
+AI- 1:  411     6    15    19   101     9    32    99   101    54
+AI- 2:   95    86   254    88    51   390   113    40    69   569
+AI- 3:   11    19   264    59    28    86    43    10    16   114
+AI- 4:    2     2    30   361     1     9    32     0     0     8
+AI- 5:   36     1    11     6   240     2     7    23    34    12
+AI- 6:   12    32   127    28    38   643    34    12    33   159
+AI- 7:  118    48   260   370    81   158   233   141   115   171
+AI- 8:  131     0     3     9    59     8    25  1086   248    10
+AI- 9:  125     3     4     5    99     5    24   285   291    54
+AI-10:   35    31   116     1    92   124    23    14    81  1637
+
+======================================================================
+Summary Metrics
+======================================================================
+Macro F1 Score:    0.4116
+Weighted F1 Score: 0.4149
+Accuracy:          0.4563
+======================================================================
+
+✓ Metrics saved to: outputs/metrics/stage2_codet5_validation.json
+
+======================================================================
+Saving Model
+======================================================================
+✓ Saved Stage 2 CodeT5 classifier to: models/stage2_codet5/classifier.pth (0.77 MB)
+✓ Model saved to: models/stage2_codet5/classifier.pth
+  Checkpoint size: 0.77 MB
+✓ Config saved to: models/stage2_codet5/config.json
+
+======================================================================
+✓ STAGE 2 CODET5 TRAINING COMPLETE!
+======================================================================
+
+Model location: models/stage2_codet5/
+  - classifier.pth (0.77 MB)
+  - config.json
+
+Metrics: outputs/metrics/stage2_codet5_validation.json
+  - Macro F1: 0.4116
+  - Accuracy: 0.4563
+======================================================================
+

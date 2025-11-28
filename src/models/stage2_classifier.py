@@ -226,6 +226,7 @@ def create_stage2_classifier(classifier_type='random_forest', **kwargs):
     if classifier_type == 'random_forest':
         return Stage2RandomForest(**kwargs)
     elif classifier_type == 'codet5':
+        from .stage2_codet5 import Stage2CodeT5
         return Stage2CodeT5(**kwargs)
     else:
         raise ValueError(f"Unknown classifier type: {classifier_type}. "

@@ -1,0 +1,71 @@
+
+======================================================================
+STAGE 2 CODET5P-770M SMALL-SCALE TESTS
+======================================================================
+
+Verifying user requirements:
+  1. Training works with checkpoints saved
+  2. Model is frozen (only head trained)
+  3. GPU is used optimally
+======================================================================
+
+======================================================================
+TEST 1: Encoder Freezing Verification
+======================================================================
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-770m...
+Loading encoder: Salesforce/codet5p-770m (~3GB download)...
+Error during conversion: ChunkedEncodingError(ProtocolError('Response ended prematurely'))
+✓ Encoder frozen (334,910,976 params)
+✓ Classification head created (265,482 params)
+  Total params: 335,176,458
+  Trainable params: 265,482 (0.08%)
+  Device: cuda
+======================================================================
+
+Parameter Status:
+  Encoder requires_grad: False
+  Head requires_grad: True
+
+✓ PASS: Encoder frozen, head trainable
+======================================================================
+
+======================================================================
+TEST 2: GPU Utilization Check
+======================================================================
+GPU Device: NVIDIA GeForce RTX 5090
+Total VRAM: 31.35 GB
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-770m...
+Loading encoder: Salesforce/codet5p-770m (~3GB download)...
+✓ Encoder frozen (334,910,976 params)
+✓ Classification head created (265,482 params)
+  Total params: 335,176,458
+  Trainable params: 265,482 (0.08%)
+  Device: cuda
+======================================================================
+
+GPU Memory After Model Loading:
+  Allocated: 1.25 GB
+  Reserved: 1.27 GB
+
+✓ Memory usage within expected range
+
+✓ PASS: GPU memory check complete
+======================================================================
+
+======================================================================
+TEST 3: Gradient Flow Verification
+======================================================================
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-770m...
+Loading encoder: Salesforce/codet5p-770m (~3GB download)...

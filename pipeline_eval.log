@@ -1,0 +1,46 @@
+
+======================================================================
+FULL PIPELINE EVALUATION: Stage 1 (SVM) + Stage 2 (CodeT5)
+======================================================================
+
+Stage 1 Model: SVM_Linear
+  Macro F1: 0.6211
+  Accuracy: 0.7513
+
+======================================================================
+STEP 1: Loading Data
+======================================================================
+
+Loading validation features...
+
+============================================================
+Loading features for validation split
+============================================================
+Loading basic stats from: data/reports/validation_basic_stats.csv
+  Loaded 100000 samples with 13 columns
+Loading complexity features from: data/reports/validation_complexity_features.csv
+  Loaded 100000 samples
+  Merged 19 complexity features
+Loading lexical features from: data/reports/validation_lexical_features.csv
+  Loaded 100000 samples
+  Merged 8 lexical features
+
+Final dataset shape: (100000, 40)
+Total features: 40
+============================================================
+
+  ✓ Loaded 100,000 samples
+
+Loading validation code strings...
+  ✓ Loaded 100,000 code samples
+
+Loading feature processor...
+Traceback (most recent call last):
+  File "/home/artur/Workspace/MBZUAI/NLP701/assignment-02/NLP7101-assignment-2B-v2/src/evaluation/evaluate_pipeline_codet5.py", line 283, in <module>
+    evaluate_full_pipeline(
+  File "/home/artur/Workspace/MBZUAI/NLP701/assignment-02/NLP7101-assignment-2B-v2/src/evaluation/evaluate_pipeline_codet5.py", line 70, in evaluate_full_pipeline
+    processor.load(f'{models_dir}/stage1/scaler.pkl')
+  File "/home/artur/Workspace/MBZUAI/NLP701/assignment-02/NLP7101-assignment-2B-v2/src/evaluation/../../src/features/feature_processor.py", line 154, in load
+    self.scaler = processor_data['scaler']
+                  ~~~~~~~~~~~~~~^^^^^^^^^^
+TypeError: 'StandardScaler' object is not subscriptable

@@ -1,0 +1,100 @@
+[00:17:46] ======================================================================
+[00:17:46] ENHANCED STAGE 2 CODET5 TEST WITH VERBOSE LOGGING
+[00:17:46] ======================================================================
+[00:17:46] 
+[STEP 0] Checking GPU availability...
+[00:17:46] ✓ GPU Available: NVIDIA GeForce RTX 5090
+[00:17:46] ✓ CUDA Version: 12.8
+[00:17:46] ✓ Total VRAM: 33.66 GB
+[00:17:46] ✓ Free VRAM: 33.66 GB
+[00:17:46] 
+[STEP 1] Loading test dataset...
+[00:17:46]   Reading data/train.parquet...
+[00:17:48]   ✓ Loaded 500000 total samples
+[00:17:48]   Filtering AI samples (label > 0)...
+[00:17:48]   ✓ Found 57904 AI samples
+[00:17:48]   Sampling 100 random AI samples...
+[00:17:48]   ✓ Selected 100 samples for testing
+[00:17:48]   Creating feature matrices...
+[00:17:48]   ✓ Train set: 80 samples
+[00:17:48]   ✓ Test set: 20 samples
+[00:17:48]   ✓ AI families in data: [ 1  2  3  4  5  6  7  8  9 10]
+[00:17:48] 
+[STEP 2] Initializing CodeT5 model...
+[00:17:48]   Creating Stage2CodeT5Simple instance...
+[00:17:48]   ✓ Classifier instance created
+[00:17:48] 
+  Loading CodeT5p-220m encoder from HuggingFace...
+[00:17:48]   (This may take a few minutes for first-time download ~1GB)
+Loading CodeT5p-220m...
+Error during conversion: ChunkedEncodingError(ProtocolError('Response ended prematurely'))
+✓ Encoder: 109,607,040 params (frozen)
+✓ Head: 199,434 params (trainable)
+[00:18:37]   ✓ Model loaded successfully
+[00:18:37] 
+  Verifying parameter freezing...
+[00:18:37]   Encoder params: 109,607,040 | requires_grad: False
+[00:18:37]   Head params: 199,434 | requires_grad: True
+[00:18:37]   ✓ Parameter freezing verified: Encoder frozen, Head trainable
+[00:18:37] 
+  Verifying device placement...
+[00:18:37]   Encoder device: cuda:0
+[00:18:37]   Head device: cuda:0
+[00:18:37]   ✓ Models correctly placed on GPU
+[00:18:37] 
+[STEP 3] Training classifier...
+[00:18:37]   Batch size: 16
+[00:18:37]   Max epochs: 2
+[00:18:37]   Learning rate: 0.0002
+[00:18:37]   Training samples: 80
+[00:18:37]   GPU memory before training: 0.44 GB
+[00:18:37] 
+  Starting training loop...
+
+Training on 80 AI samples
+Batch size: 16
+Epochs: 2
+Epoch 1/2 - Loss: 2.3018
+Epoch 2/2 - Loss: 2.2823
+[00:18:38]   ✓ Training completed successfully
+[00:18:38]   GPU peak memory: 1.27 GB
+[00:18:38]   GPU current memory: 0.46 GB
+[00:18:38] 
+[STEP 4] Testing inference...
+[00:18:38]   Running predictions on 20 test samples...
+[00:18:38]   ✓ Predictions generated successfully
+[00:18:38]   Predictions (first 10): [2 2 2 2 2 2 6 2 2 7]
+[00:18:38]   Ground truth (first 10): [ 1  7  1  2  8  7 10  2  9  9]
+[00:18:38]   ✓ Test accuracy: 15.0% (3/20 correct)
+[00:18:38] 
+[STEP 5] Testing checkpoint save/load...
+[00:18:38]   Saving checkpoint to: /tmp/tmpzlmjhhnw/codet5_checkpoint.pth
+✓ Model saved to /tmp/tmpzlmjhhnw/codet5_checkpoint.pth
+[00:18:38]   ✓ Checkpoint saved (0.76 MB)
+[00:18:38] 
+  Loading checkpoint in new model instance...
+Error during conversion: ChunkedEncodingError(ProtocolError('Response ended prematurely'))
+[00:19:26]   ✓ Checkpoint loaded successfully
+[00:19:26]   Running predictions with loaded model...
+[00:19:26]   ✓ Loaded model can generate predictions
+[00:19:26]   ✓ Checkpoint integrity verified (predictions match)
+[00:19:26] 
+[GPU FINAL STATS]
+[00:19:26]   Allocated memory: 0.90 GB
+[00:19:26]   Reserved memory: 1.77 GB
+[00:19:26]   Peak memory: 1.70 GB
+[00:19:26] 
+======================================================================
+[00:19:26] ✓ ALL TESTS PASSED!
+[00:19:26] ======================================================================
+[00:19:26] 
+Verified:
+[00:19:26]   [✓] Model loads correctly
+[00:19:26]   [✓] Encoder is frozen (only head trained)
+[00:19:26]   [✓] Training runs on GPU (if available)
+[00:19:26]   [✓] Training completes successfully
+[00:19:26]   [✓] Inference works correctly
+[00:19:26]   [✓] Classification head saves/loads properly
+[00:19:26] 
+The CodeT5 Stage 2 classifier is ready for production use!
+[00:19:26] ======================================================================

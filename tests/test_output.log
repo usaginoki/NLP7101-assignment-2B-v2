@@ -1,0 +1,5 @@
+/bin/bash: line 1: kill: sleep: arguments must be process or job IDs
+/bin/bash: line 1: kill: (2) - Operation not permitted
+/bin/bash: line 1: kill: python: arguments must be process or job IDs
+/bin/bash: line 1: kill: -u: arguments must be process or job IDs
+/bin/bash: line 1: kill: tests/test_stage2_codet5_small.py: arguments must be process or job IDs

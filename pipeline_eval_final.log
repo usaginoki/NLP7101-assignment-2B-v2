@@ -1,0 +1,171 @@
+Error during conversion: ChunkedEncodingError(ProtocolError('Response ended prematurely'))
+
+======================================================================
+FULL PIPELINE EVALUATION: Stage 1 (SVM) + Stage 2 (CodeT5)
+======================================================================
+
+Stage 1 Model: SVM_Linear
+  Macro F1: 0.6211
+  Accuracy: 0.7513
+
+======================================================================
+STEP 1: Loading Data
+======================================================================
+
+Loading validation features...
+
+============================================================
+Loading features for validation split
+============================================================
+Loading basic stats from: data/reports/validation_basic_stats.csv
+  Loaded 100000 samples with 13 columns
+Loading complexity features from: data/reports/validation_complexity_features.csv
+  Loaded 100000 samples
+  Merged 19 complexity features
+Loading lexical features from: data/reports/validation_lexical_features.csv
+  Loaded 100000 samples
+  Merged 8 lexical features
+
+Final dataset shape: (100000, 40)
+Total features: 40
+============================================================
+
+  ✓ Loaded 100,000 samples
+
+Loading validation code strings...
+  ✓ Loaded 100,000 code samples
+
+Loading feature processor...
+  ✓ Loaded scaler (old format): StandardScaler
+  Features: 36
+
+Transforming features using fitted scaler...
+  Transformed features shape: (100000, 36)
+  ✓ Features transformed: (100000, 36)
+
+======================================================================
+STEP 2: Loading Stage 1 Classifier
+======================================================================
+
+✓ Loaded Stage 1: models/stage1/classifier.pkl
+  Model type: LinearSVC
+
+======================================================================
+STEP 3: Loading Stage 2 CodeT5 Classifier
+======================================================================
+
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-220m...
+Loading encoder: Salesforce/codet5p-220m (~1GB download)...
+✓ Encoder frozen (109,607,040 params)
+✓ Classification head created (199,946 params)
+  Total params: 109,806,986
+  Trainable params: 199,946 (0.18%)
+  Device: cuda
+======================================================================
+✓ Loaded Stage 2 CodeT5 classifier from: models/stage2_codet5/classifier.pth (0.77 MB)
+✓ Loaded Stage 2: models/stage2_codet5/classifier.pth
+
+======================================================================
+STEP 4: Running Stage 1 Predictions
+======================================================================
+
+Predicting with Stage 1 (binary: Human vs AI)...
+✓ Stage 1 predictions complete
+  Predicted Human: 70,126 (70.1%)
+  Predicted AI: 29,874 (29.9%)
+  Stage 1 Macro F1: 0.6211
+  Stage 1 Accuracy: 0.7513
+
+======================================================================
+STEP 5: Running Stage 2 Predictions
+======================================================================
+
+Samples sent to Stage 2: 29,874
+Predicting with Stage 2 (AI families 1-10)...
+✓ Stage 2 predictions complete
+
+======================================================================
+STEP 6: Combining Stage 1 + Stage 2 Predictions
+======================================================================
+
+✓ Combined predictions created
+  Total samples: 100,000
+  Predicted as Human (0): 70,126
+  Predicted as AI-1: 10,508
+  Predicted as AI-2: 235
+  Predicted as AI-3: 1,347
+  Predicted as AI-4: 2,203
+  Predicted as AI-5: 1,563
+  Predicted as AI-6: 1,392
+  Predicted as AI-7: 3,473
+  Predicted as AI-8: 3,916
+  Predicted as AI-9: 2,974
+  Predicted as AI-10: 2,263
+
+======================================================================
+STEP 7: Evaluating Full Pipeline Performance
+======================================================================
+
+======================================================================
+FULL PIPELINE RESULTS (11-class: Human + 10 AI Families)
+======================================================================
+              precision    recall  f1-score   support
+
+       Human     0.9536    0.7557    0.8432     88490
+        AI-1     0.0244    0.3022    0.0451       847
+        AI-2     0.3277    0.0439    0.0774      1755
+        AI-3     0.1411    0.2923    0.1903       650
+        AI-4     0.0785    0.3888    0.1307       445
+        AI-5     0.1062    0.4462    0.1716       372
+        AI-6     0.4088    0.5089    0.4534      1118
+        AI-7     0.0380    0.0779    0.0511      1695
+        AI-8     0.2260    0.5605    0.3221      1579
+        AI-9     0.0713    0.2369    0.1096       895
+       AI-10     0.5126    0.5385    0.5252      2154
+
+    accuracy                         0.7069    100000
+   macro avg     0.2626    0.3774    0.2654    100000
+weighted avg     0.8719    0.7069    0.7737    100000
+
+
+Confusion Matrix (11x11):
+(Rows: Actual, Columns: Predicted)
+        Hu A 1 A 2 A 3 A 4 A 5 A 6 A 7 A 8 A 9 A10
+ Human: 66873 9887  37 548 1711 1009 135 3145 2573 2265 307
+ AI- 1: 309 256   5   8   9  63   7  22  65  69  34
+ AI- 2: 457  56  77 181  44  42 355  70  24  46 403
+ AI- 3: 172   9  17 190  37  23  71  27   5   9  90
+ AI- 4: 217   2   2  21 173   1   7  16   0   0   6
+ AI- 5: 110  23   1   9   5 166   2   3  19  26   8
+ AI- 6: 198  10  30 103  20  27 569  17   9  21 114
+ AI- 7: 589  67  38 199 194  49 135 132 101  87 104
+ AI- 8: 340 100   0   1   7  45   4  15 885 177   5
+ AI- 9: 256  76   3   2   2  72   3  12 225 212  32
+ AI-10: 605  22  25  85   1  66 104  14  10  62 1160
+
+======================================================================
+SUMMARY METRICS
+======================================================================
+Overall Macro F1:    0.2654
+Overall Weighted F1: 0.7737
+Overall Accuracy:    0.7069
+======================================================================
+
+======================================================================
+STAGE-SPECIFIC PERFORMANCE
+======================================================================
+Stage 1 (Binary Classification):
+  Macro F1:  0.6211
+  Accuracy:  0.7513
+
+Stage 2 (AI Family Classification - on true AI samples):
+  Macro F1:  0.3462
+  Accuracy:  0.3319
+======================================================================
+
+✓ Metrics saved to: outputs/metrics/pipeline_codet5_validation.json
+

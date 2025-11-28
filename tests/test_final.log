@@ -1,0 +1,184 @@
+
+======================================================================
+STAGE 2 CODET5P-770M SMALL-SCALE TESTS
+======================================================================
+
+Verifying user requirements:
+  1. Training works with checkpoints saved
+  2. Model is frozen (only head trained)
+  3. GPU is used optimally
+======================================================================
+
+======================================================================
+TEST 1: Encoder Freezing Verification
+======================================================================
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-770m...
+Loading encoder: Salesforce/codet5p-770m (~3GB download)...
+✓ Encoder frozen (334,910,976 params)
+✓ Classification head created (265,482 params)
+  Total params: 335,176,458
+  Trainable params: 265,482 (0.08%)
+  Device: cuda
+======================================================================
+
+Parameter Status:
+  Encoder requires_grad: False
+  Head requires_grad: True
+
+✓ PASS: Encoder frozen, head trainable
+======================================================================
+
+======================================================================
+TEST 2: GPU Utilization Check
+======================================================================
+GPU Device: NVIDIA GeForce RTX 5090
+Total VRAM: 31.35 GB
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-770m...
+Loading encoder: Salesforce/codet5p-770m (~3GB download)...
+Error during conversion: ChunkedEncodingError(ProtocolError('Response ended prematurely'))
+✓ Encoder frozen (334,910,976 params)
+✓ Classification head created (265,482 params)
+  Total params: 335,176,458
+  Trainable params: 265,482 (0.08%)
+  Device: cuda
+======================================================================
+
+GPU Memory After Model Loading:
+  Allocated: 1.25 GB
+  Reserved: 1.27 GB
+
+✓ Memory usage within expected range
+
+✓ PASS: GPU memory check complete
+======================================================================
+
+======================================================================
+TEST 3: Gradient Flow Verification
+======================================================================
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-770m...
+Loading encoder: Salesforce/codet5p-770m (~3GB download)...
+✓ Encoder frozen (334,910,976 params)
+✓ Classification head created (265,482 params)
+  Total params: 335,176,458
+  Trainable params: 265,482 (0.08%)
+  Device: cuda
+======================================================================
+
+Gradient Status:
+  Encoder has gradients: False
+  Head has gradients: True
+
+✓ PASS: Gradients only in classification head
+======================================================================
+
+======================================================================
+TEST 4: Checkpoint Save/Load Verification
+======================================================================
+
+======================================================================
+Loading Small Test Dataset
+======================================================================
+Loaded 200 AI samples
+  Train: 160 samples
+  Test: 40 samples
+  AI families: [ 1  2  3  4  5  6  7  8  9 10]
+======================================================================
+
+Training model on 200 samples (1 epoch)...
+
+======================================================================
+Training Stage 2: CodeT5p-770m Classifier (AI Families)
+======================================================================
+Training samples (AI only): 160
+AI families: 10
+Class distribution:
+  AI-1: 9 (5.62%)
+  AI-2: 26 (16.25%)
+  AI-3: 7 (4.38%)
+  AI-4: 4 (2.50%)
+  AI-5: 5 (3.12%)
+  AI-6: 15 (9.38%)
+  AI-7: 27 (16.88%)
+  AI-8: 24 (15.00%)
+  AI-9: 15 (9.38%)
+  AI-10: 28 (17.50%)
+======================================================================
+
+======================================================================
+Initializing CodeT5p-770m Model
+======================================================================
+Loading tokenizer: Salesforce/codet5p-770m...
+Loading encoder: Salesforce/codet5p-770m (~3GB download)...
+Error during conversion: ChunkedEncodingError(ProtocolError('Response ended prematurely'))
+✓ Encoder frozen (334,910,976 params)
+✓ Classification head created (265,482 params)
+  Total params: 335,176,458
+  Trainable params: 265,482 (0.08%)
+  Device: cuda
+======================================================================
+
+Class weights (balanced):
+  AI-1: 1.778
+  AI-2: 0.615
+  AI-3: 2.286
+  AI-4: 4.000
+  AI-5: 3.200
+  AI-6: 1.067
+  AI-7: 0.593
+  AI-8: 0.667
+  AI-9: 1.067
+  AI-10: 0.571
+
+Training configuration:
+  Batch size: 8
+  Batches per epoch: 20
+  Learning rate: 0.0002
+  Max epochs: 1
+  Patience: 3
+======================================================================
+Epoch 1/1 - Train Loss: 2.3603
+======================================================================
+✓ Stage 2 CodeT5 training complete!
+======================================================================
+
+Predictions before save: [ 1  1  8  8  8  7 10  1  3  8]
+✓ Saved Stage 2 CodeT5 classifier to: /tmp/tmp6xzr4i15/test_checkpoint.pth (1.02 MB)
+Checkpoint size: 1.02 MB
+
+Loading checkpoint in new model instance...
+
+✗ EXCEPTION: Weights only load failed. This file can still be loaded, to do so you have two options, [1mdo those steps only if you trust the source of the checkpoint[0m. 
+	(1) In PyTorch 2.6, we changed the default value of the `weights_only` argument in `torch.load` from `False` to `True`. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.
+	(2) Alternatively, to load with `weights_only=True` please check the recommended steps in the following error message.
+	WeightsUnpickler error: Unsupported global: GLOBAL numpy._core.multiarray._reconstruct was not an allowed global by default. Please use `torch.serialization.add_safe_globals([numpy._core.multiarray._reconstruct])` or the `torch.serialization.safe_globals([numpy._core.multiarray._reconstruct])` context manager to allowlist this global if you trust this class/function.
+
+Check the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.
+Traceback (most recent call last):
+  File "/home/artur/Workspace/MBZUAI/NLP701/assignment-02/NLP7101-assignment-2B-v2/tests/test_stage2_codet5_small.py", line 255, in run_all_tests
+    results['test_4_checkpoint'] = test_4_checkpoint_save_load()
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/artur/Workspace/MBZUAI/NLP701/assignment-02/NLP7101-assignment-2B-v2/tests/test_stage2_codet5_small.py", line 214, in test_4_checkpoint_save_load
+    clf_new.load(str(checkpoint_path))
+  File "/home/artur/Workspace/MBZUAI/NLP701/assignment-02/NLP7101-assignment-2B-v2/src/models/stage2_codet5.py", line 550, in load
+    checkpoint = torch.load(filepath, map_location=self.device)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/artur/Workspace/MBZUAI/NLP701/assignment-02/NLP7101-assignment-2B-v2/.venv/lib/python3.11/site-packages/torch/serialization.py", line 1529, in load
+    raise pickle.UnpicklingError(_get_wo_message(str(e))) from None
+_pickle.UnpicklingError: Weights only load failed. This file can still be loaded, to do so you have two options, [1mdo those steps only if you trust the source of the checkpoint[0m. 
+	(1) In PyTorch 2.6, we changed the default value of the `weights_only` argument in `torch.load` from `False` to `True`. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.
+	(2) Alternatively, to load with `weights_only=True` please check the recommended steps in the following error message.
+	WeightsUnpickler error: Unsupported global: GLOBAL numpy._core.multiarray._reconstruct was not an allowed global by default. Please use `torch.serialization.add_safe_globals([numpy._core.multiarray._reconstruct])` or the `torch.serialization.safe_globals([numpy._core.multiarray._reconstruct])` context manager to allowlist this global if you trust this class/function.
+
+Check the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.
